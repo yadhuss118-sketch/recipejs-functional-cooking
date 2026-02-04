@@ -1,15 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RecipeJS - Functional Cooking Companion</title>
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css" />
-
-    <!-- JavaScript -->
-    <script src="js/app.js" defer></script>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -18,25 +13,29 @@
         <p>Your Functional Cooking Companion</p>
     </header>
 
-    <main>
-        <!-- Filter & Sort Controls -->
-        <div class="controls">
-            <button data-action="all">Show All</button>
-            <button data-action="easy">Easy</button>
-            <button data-action="medium">Medium</button>
-            <button data-action="hard">Hard</button>
-            <button data-action="quick">Quick Recipes</button>
-            <button data-action="time">Sort by Time</button>
-            <button data-action="az">Sort A–Z</button>
-        </div>
+    <section class="controls">
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search recipes..."
+            onkeyup="searchRecipes()"
+        />
 
-        <!-- Recipes will be injected here -->
-        <div id="recipe-container"></div>
+        <button onclick="handleAction('all')">Show All</button>
+        <button onclick="handleAction('easy')">Easy</button>
+        <button onclick="handleAction('medium')">Medium</button>
+        <button onclick="handleAction('hard')">Hard</button>
+        <button onclick="handleAction('quick')">Quick (≤30 min)</button>
+        <button onclick="handleAction('time')">Sort by Time</button>
+        <button onclick="handleAction('az')">Sort A–Z</button>
+    </section>
+
+    <main>
+        <div id="recipe-container">
+            <!-- Recipes rendered by JavaScript -->
+        </div>
     </main>
 
-    <footer>
-        <p>Built with ❤️ using JavaScript</p>
-    </footer>
-
+    <script src="js/app.js"></script>
 </body>
 </html>

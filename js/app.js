@@ -33,12 +33,12 @@ function renderRecipes(recipeList) {
     });
 }
 
-// Filter Helpers
+// Filter by Difficulty
 function filterByDifficulty(level) {
     return recipes.filter(r => r.difficulty === level);
 }
 
-// Button Actions
+// Handle Buttons
 function handleAction(action) {
     let result = [...recipes];
 
@@ -59,5 +59,24 @@ function handleAction(action) {
     renderRecipes(result);
 }
 
-// Initial Load
+// Search Recipes
+function searchRecipes() {
+    const query = document
+        .getElementById("searchInput")
+        .value
+        .toLowerCase();
+
+    const filtered = recipes.filter(recipe =>
+        recipe.title.toLowerCase().includes(query)
+    );
+
+    if (filtered.length === 0) {
+        recipeContainer.innerHTML = "<p>No recipes found 😢</p>";
+        return;
+    }
+
+    renderRecipes(filtered);
+}
+
+// Initial Render
 renderRecipes(recipes);
