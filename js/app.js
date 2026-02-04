@@ -1,34 +1,206 @@
-// Recipe data
-const recipes = [
-    {id:1, title:"Classic Spaghetti Carbonara", time:25, difficulty:"easy", description:"A creamy Italian pasta dish made with eggs, cheese, pancetta, and black pepper.", category:"pasta"},
-    {id:2, title:"Chicken Tikka Masala", time:45, difficulty:"medium", description:"Tender chicken pieces in a creamy, spiced tomato sauce.", category:"curry"},
-    {id:3, title:"Homemade Croissants", time:180, difficulty:"hard", description:"Buttery, flaky French pastries that require patience but deliver amazing results.", category:"baking"},
-    {id:4, title:"Greek Salad", time:15, difficulty:"easy", description:"Fresh vegetables, feta cheese, and olives tossed in olive oil and herbs.", category:"salad"},
-    {id:5, title:"Beef Wellington", time:120, difficulty:"hard", description:"Tender beef fillet coated with mushroom duxelles and wrapped in puff pastry.", category:"meat"},
-    {id:6, title:"Vegetable Stir Fry", time:20, difficulty:"easy", description:"Colorful mixed vegetables cooked quickly in a savory sauce.", category:"vegetarian"},
-    {id:7, title:"Pad Thai", time:30, difficulty:"medium", description:"Thai stir-fried rice noodles with shrimp, peanuts, and tangy tamarind sauce.", category:"noodles"},
-    {id:8, title:"Margherita Pizza", time:60, difficulty:"medium", description:"Classic Italian pizza with fresh mozzarella, tomatoes, and basil.", category:"pizza"}
-];
+const RecipeApp = (() => {
 
-// DOM Selection
-const recipeContainer = document.querySelector('#recipe-container');
+  // --------------------
+  // RECIPE DATA
+  // --------------------
+  const recipes = [
+    {
+      title: "Pasta Alfredo",
+      difficulty: "easy",
+      time: 20,
+      ingredients: ["Pasta", "Cream", "Butter", "Garlic"],
+      steps: [
+        "Boil pasta",
+        "Prepare sauce",
+        "Mix pasta with sauce"
+      ]
+    },
+    {
+      title: "Chicken Curry",
+      difficulty: "medium",
+      time: 45,
+      ingredients: ["Chicken", "Onion", "Tomato", "Spices"],
+      steps: [
+        "Wash chicken",
+        {
+          text: "Prepare masala",
+          substeps: [
+            "Heat oil",
+            "Add onion",
+            {
+              text: "Add spices",
+              substeps: ["Turmeric", "Chili powder"]
+            }
+          ]
+        },
+        "Add chicken",
+        "Cook for 30 minutes"
+      ]
+    },
+    {
+      title: "Omelette",
+      difficulty: "easy",
+      time: 10,
+      ingredients: ["Eggs", "Salt", "Oil"],
+      steps: ["Crack eggs", "Beat eggs", "Cook in pan"]
+    }
+  ];
 
-// Function to create HTML for a single recipe card
-const createRecipeCard = (recipe) => `
-    <div class="recipe-card" data-id="${recipe.id}">
-        <h3>${recipe.title}</h3>
+  // --------------------
+  // STATE
+  // --------------------
+  let currentFilter = "all";
+  let currentSort = "none";
+  let searchText = "";
+
+  // --------------------
+  // DOM ELEMENTS
+  // --------------------
+  const recipeContainer = document.getElementById("recipe-container");
+  const filterButtons = document.querySelectorAll("[data-filter]");
+  const sortButtons = document.querySelectorAll("[data-sort]");
+  const searchInput = document.getElementById("searchInput");
+
+  // --------------------
+  // FILTER
+  // --------------------
+  const applyFilter = list => {
+    if (currentFilter === "all") return list;
+    if (currentFilter === "quick") {
+      return list.filter(r => r.time <= 30);
+    }
+    return list.filter(r => r.difficulty === currentFilter);
+  };
+
+  // --------------------
+  // SORT
+  // --------------------
+  const applySort = list => {
+    if (currentSort === "name") {
+      return [...list].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    if (currentSort === "time") {
+      return [...list].sort((a, b) => a.time - b.time);
+    }
+    return list;
+  };
+
+  // --------------------
+  // SEARCH
+  // --------------------
+  const applySearch = list =>
+    list.filter(r =>
+      r.title.toLowerCase().includes(searchText)
+    );
+
+  // --------------------
+  // RECURSIVE STEPS RENDER
+  // --------------------
+  const renderSteps = steps => {
+    return `
+      <ul>
+        ${steps.map(step => {
+          if (typeof step === "string") {
+            return `<li>${step}</li>`;
+          } else {
+            return `
+              <li>
+                ${step.text}
+                ${renderSteps(step.substeps)}
+              </li>
+            `;
+          }
+        }).join("")}
+      </ul>
+    `;
+  };
+
+  // --------------------
+  // RENDER RECIPES
+  // --------------------
+  const renderRecipes = list => {
+    recipeContainer.innerHTML = list.map((r, index) => `
+      <div class="recipe-card">
+        <h3>${r.title}</h3>
         <div class="recipe-meta">
-            <span>⏱️ ${recipe.time} min</span>
-            <span class="difficulty ${recipe.difficulty}">${recipe.difficulty}</span>
+          <p>Difficulty: ${r.difficulty}</p>
+          <p>Time: ${r.time} mins</p>
         </div>
-        <p>${recipe.description}</p>
-    </div>
-`;
 
-// Function to render all recipes
-const renderRecipes = (recipesToRender) => {
-    recipeContainer.innerHTML = recipesToRender.map(createRecipeCard).join('');
-};
+        <button class="toggle-btn" data-type="ingredients">
+          Show Ingredients
+        </button>
+        <div class="ingredients-container">
+          <ul>${r.ingredients.map(i => `<li>${i}</li>`).join("")}</ul>
+        </div>
 
-// Initialize App
-renderRecipes(recipes);
+        <button class="toggle-btn" data-type="steps">
+          Show Steps
+        </button>
+        <div class="steps-container">
+          ${renderSteps(r.steps)}
+        </div>
+      </div>
+    `).join("");
+  };
+
+  // --------------------
+  // UPDATE DISPLAY
+  // --------------------
+  const updateDisplay = () => {
+    let result = recipes;
+    result = applySearch(result);
+    result = applyFilter(result);
+    result = applySort(result);
+    renderRecipes(result);
+  };
+
+  // --------------------
+  // EVENTS
+  // --------------------
+  filterButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentFilter = btn.dataset.filter;
+      filterButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      updateDisplay();
+    });
+  });
+
+  sortButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentSort = btn.dataset.sort;
+      sortButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      updateDisplay();
+    });
+  });
+
+  searchInput.addEventListener("input", e => {
+    searchText = e.target.value.toLowerCase();
+    updateDisplay();
+  });
+
+  recipeContainer.addEventListener("click", e => {
+    if (!e.target.classList.contains("toggle-btn")) return;
+
+    const type = e.target.dataset.type;
+    const container = e.target.nextElementSibling;
+    container.classList.toggle("visible");
+
+    e.target.textContent =
+      container.classList.contains("visible")
+        ? `Hide ${type}`
+        : `Show ${type}`;
+  });
+
+  // --------------------
+  // INIT
+  // --------------------
+  const init = () => updateDisplay();
+
+  return { init };
+
+})();
+
+RecipeApp.init();
