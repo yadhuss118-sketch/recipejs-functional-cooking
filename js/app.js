@@ -1,41 +1,19 @@
-// ===============================
 // Recipe Data
-// ===============================
-
 const recipes = [
-    {
-        title: "Spaghetti Carbonara",
-        difficulty: "Medium",
-        time: 30
-    },
-    {
-        title: "Grilled Cheese Sandwich",
-        difficulty: "Easy",
-        time: 10
-    },
-    {
-        title: "Chicken Biryani",
-        difficulty: "Hard",
-        time: 60
-    },
-    {
-        title: "Pancakes",
-        difficulty: "Easy",
-        time: 20
-    },
-    {
-        title: "Veg Stir Fry",
-        difficulty: "Medium",
-        time: 25
-    }
+    { id: 1, title: "Spaghetti Carbonara", time: 25, difficulty: "Easy" },
+    { id: 2, title: "Chicken Tikka Masala", time: 45, difficulty: "Medium" },
+    { id: 3, title: "Beef Wellington", time: 120, difficulty: "Hard" },
+    { id: 4, title: "Greek Salad", time: 15, difficulty: "Easy" },
+    { id: 5, title: "Pad Thai", time: 30, difficulty: "Medium" },
+    { id: 6, title: "Homemade Croissants", time: 180, difficulty: "Hard" },
+    { id: 7, title: "Vegetable Stir Fry", time: 20, difficulty: "Easy" },
+    { id: 8, title: "Margherita Pizza", time: 60, difficulty: "Medium" }
 ];
 
-// ===============================
+// DOM Selection
+const recipeContainer = document.querySelector("#recipe-container");
+
 // Render Recipes
-// ===============================
-
-const recipeContainer = document.getElementById("recipe-container");
-
 function renderRecipes(recipeList) {
     recipeContainer.innerHTML = "";
 
@@ -43,58 +21,43 @@ function renderRecipes(recipeList) {
         const card = document.createElement("div");
         card.className = "recipe-card";
 
+        const level = recipe.difficulty.toLowerCase();
+
         card.innerHTML = `
             <h3>${recipe.title}</h3>
-            <p>Difficulty: <strong>${recipe.difficulty}</strong></p>
-            <p>Time: ${recipe.time} mins</p>
+            <span class="badge ${level}">${recipe.difficulty}</span>
+            <p>⏱ ${recipe.time} minutes</p>
         `;
 
         recipeContainer.appendChild(card);
     });
 }
 
-// Initial render
-renderRecipes(recipes);
-
-// ===============================
-// Filter & Sort Controls
-// ===============================
-
-const buttons = document.querySelectorAll(".controls button");
-
-buttons.forEach(button => {
-    button.addEventListener("click", () => {
-        const action = button.dataset.action;
-        handleAction(action);
-    });
-});
-
-function handleAction(action) {
-    let updatedRecipes = [...recipes];
-
-    if (action === "easy") {
-        updatedRecipes = recipes.filter(r => r.difficulty === "Easy");
-    }
-
-    if (action === "medium") {
-        updatedRecipes = recipes.filter(r => r.difficulty === "Medium");
-    }
-
-    if (action === "hard") {
-        updatedRecipes = recipes.filter(r => r.difficulty === "Hard");
-    }
-
-    if (action === "quick") {
-        updatedRecipes = recipes.filter(r => r.time <= 30);
-    }
-
-    if (action === "time") {
-        updatedRecipes.sort((a, b) => a.time - b.time);
-    }
-
-    if (action === "az") {
-        updatedRecipes.sort((a, b) => a.title.localeCompare(b.title));
-    }
-
-    renderRecipes(updatedRecipes);
+// Filter Helpers
+function filterByDifficulty(level) {
+    return recipes.filter(r => r.difficulty === level);
 }
+
+// Button Actions
+function handleAction(action) {
+    let result = [...recipes];
+
+    const actions = {
+        easy: () => filterByDifficulty("Easy"),
+        medium: () => filterByDifficulty("Medium"),
+        hard: () => filterByDifficulty("Hard"),
+        quick: () => recipes.filter(r => r.time <= 30),
+        time: () => [...recipes].sort((a, b) => a.time - b.time),
+        az: () => [...recipes].sort((a, b) => a.title.localeCompare(b.title)),
+        all: () => recipes
+    };
+
+    if (actions[action]) {
+        result = actions[action]();
+    }
+
+    renderRecipes(result);
+}
+
+// Initial Load
+renderRecipes(recipes);
