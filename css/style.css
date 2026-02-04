@@ -38,7 +38,7 @@ main {
     padding: 0 1rem;
 }
 
-/* Recipe Container */
+/* Recipe Container - Flexbox Grid */
 #recipe-container {
     display: flex;
     flex-wrap: wrap;
@@ -61,6 +61,7 @@ main {
     box-shadow: 0 8px 15px rgba(0,0,0,0.2);
 }
 
+/* Recipe Card Content */
 .recipe-card h3 {
     color: #667eea;
     font-size: 1.5rem;
@@ -80,7 +81,7 @@ main {
     line-height: 1.5;
 }
 
-/* Difficulty Badges */
+/* Difficulty Badge */
 .difficulty {
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
