@@ -1,82 +1,181 @@
-// Recipe Data
+// --------------------
+// DATA
+// --------------------
 const recipes = [
-    { id: 1, title: "Spaghetti Carbonara", time: 25, difficulty: "Easy" },
-    { id: 2, title: "Chicken Tikka Masala", time: 45, difficulty: "Medium" },
-    { id: 3, title: "Beef Wellington", time: 120, difficulty: "Hard" },
-    { id: 4, title: "Greek Salad", time: 15, difficulty: "Easy" },
-    { id: 5, title: "Pad Thai", time: 30, difficulty: "Medium" },
-    { id: 6, title: "Homemade Croissants", time: 180, difficulty: "Hard" },
-    { id: 7, title: "Vegetable Stir Fry", time: 20, difficulty: "Easy" },
-    { id: 8, title: "Margherita Pizza", time: 60, difficulty: "Medium" }
+  {
+    title: "Pasta Alfredo",
+    difficulty: "easy",
+    time: 20,
+    ingredients: ["Pasta", "Cream", "Garlic", "Cheese"],
+    steps: ["Boil pasta", "Prepare sauce", "Mix together", "Serve"]
+  },
+  {
+    title: "Chicken Curry",
+    difficulty: "medium",
+    time: 45,
+    ingredients: ["Chicken", "Onion", "Tomato", "Spices"],
+    steps: ["Marinate chicken", "Cook masala", "Add chicken", "Simmer"]
+  },
+  {
+    title: "Veg Fried Rice",
+    difficulty: "easy",
+    time: 25,
+    ingredients: ["Rice", "Vegetables", "Soy sauce"],
+    steps: ["Cook rice", "Stir fry veggies", "Add rice", "Mix"]
+  },
+  {
+    title: "Beef Steak",
+    difficulty: "hard",
+    time: 60,
+    ingredients: ["Beef", "Salt", "Pepper"],
+    steps: ["Season beef", "Heat pan", "Cook steak", "Rest & serve"]
+  }
 ];
 
-// DOM Selection
-const recipeContainer = document.querySelector("#recipe-container");
+// --------------------
+// STATE
+// --------------------
+let currentFilter = "all";
+let currentSort = "none";
+let searchTerm = "";
+let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 
-// Render Recipes
-function renderRecipes(recipeList) {
-    recipeContainer.innerHTML = "";
+// --------------------
+// DOM
+// --------------------
+const recipeContainer = document.getElementById("recipe-container");
+const filterButtons = document.querySelectorAll("[data-filter]");
+const sortButtons = document.querySelectorAll("[data-sort]");
+const searchInput = document.getElementById("searchInput");
 
-    recipeList.forEach(recipe => {
-        const card = document.createElement("div");
-        card.className = "recipe-card";
+// --------------------
+// HELPERS
+// --------------------
+const isFavorite = (title) => favorites.includes(title);
 
-        const level = recipe.difficulty.toLowerCase();
+const toggleFavorite = (title) => {
+  favorites = isFavorite(title)
+    ? favorites.filter(f => f !== title)
+    : [...favorites, title];
 
-        card.innerHTML = `
-            <h3>${recipe.title}</h3>
-            <span class="badge ${level}">${recipe.difficulty}</span>
-            <p>⏱ ${recipe.time} minutes</p>
-        `;
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+};
 
-        recipeContainer.appendChild(card);
-    });
-}
+// --------------------
+// FILTER / SEARCH / SORT
+// --------------------
+const applyFilter = (list) => {
+  if (currentFilter === "all") return list;
+  if (currentFilter === "quick") {
+    return list.filter(r => r.time <= 30);
+  }
+  return list.filter(r => r.difficulty === currentFilter);
+};
 
-// Filter by Difficulty
-function filterByDifficulty(level) {
-    return recipes.filter(r => r.difficulty === level);
-}
+const applySearch = (list) => {
+  if (!searchTerm) return list;
+  return list.filter(r =>
+    r.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+};
 
-// Handle Buttons
-function handleAction(action) {
-    let result = [...recipes];
+const applySort = (list) => {
+  if (currentSort === "name") {
+    return [...list].sort((a, b) => a.title.localeCompare(b.title));
+  }
+  if (currentSort === "time") {
+    return [...list].sort((a, b) => a.time - b.time);
+  }
+  return list;
+};
 
-    const actions = {
-        easy: () => filterByDifficulty("Easy"),
-        medium: () => filterByDifficulty("Medium"),
-        hard: () => filterByDifficulty("Hard"),
-        quick: () => recipes.filter(r => r.time <= 30),
-        time: () => [...recipes].sort((a, b) => a.time - b.time),
-        az: () => [...recipes].sort((a, b) => a.title.localeCompare(b.title)),
-        all: () => recipes
-    };
+// --------------------
+// RENDER
+// --------------------
+const renderRecipes = (list) => {
+  recipeContainer.innerHTML = list.map((r, i) => `
+    <div class="recipe-card">
+      <h3>${r.title}</h3>
 
-    if (actions[action]) {
-        result = actions[action]();
-    }
+      <div class="recipe-meta">
+        <p>Difficulty: ${r.difficulty}</p>
+        <p>Time: ${r.time} mins</p>
+      </div>
 
-    renderRecipes(result);
-}
+      <button class="btn toggle-btn" data-index="${i}">
+        Show Details
+      </button>
 
-// Search Recipes
-function searchRecipes() {
-    const query = document
-        .getElementById("searchInput")
-        .value
-        .toLowerCase();
+      <button class="btn fav-btn" data-title="${r.title}">
+        ${isFavorite(r.title) ? "❤️ Favorite" : "🤍 Favorite"}
+      </button>
 
-    const filtered = recipes.filter(recipe =>
-        recipe.title.toLowerCase().includes(query)
-    );
+      <div class="details hidden" id="details-${i}">
+        <h4>Ingredients</h4>
+        <ul>${r.ingredients.map(i => `<li>${i}</li>`).join("")}</ul>
 
-    if (filtered.length === 0) {
-        recipeContainer.innerHTML = "<p>No recipes found 😢</p>";
-        return;
-    }
+        <h4>Steps</h4>
+        <ol>${r.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+      </div>
+    </div>
+  `).join("");
+};
 
-    renderRecipes(filtered);
-}
+// --------------------
+// UPDATE
+// --------------------
+const updateDisplay = () => {
+  let result = recipes;
+  result = applyFilter(result);
+  result = applySearch(result);
+  result = applySort(result);
+  renderRecipes(result);
+};
 
-// Initial Render
-renderRecipes(recipes);
+// --------------------
+// EVENTS
+// --------------------
+filterButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    currentFilter = btn.dataset.filter;
+    filterButtons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    updateDisplay();
+  });
+});
+
+sortButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    currentSort = btn.dataset.sort;
+    sortButtons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    updateDisplay();
+  });
+});
+
+searchInput.addEventListener("input", (e) => {
+  searchTerm = e.target.value;
+  updateDisplay();
+});
+
+recipeContainer.addEventListener("click", (e) => {
+
+  if (e.target.classList.contains("toggle-btn")) {
+    const idx = e.target.dataset.index;
+    const details = document.getElementById(`details-${idx}`);
+    details.classList.toggle("hidden");
+    e.target.textContent = details.classList.contains("hidden")
+      ? "Show Details"
+      : "Hide Details";
+  }
+
+  if (e.target.classList.contains("fav-btn")) {
+    toggleFavorite(e.target.dataset.title);
+    updateDisplay();
+  }
+});
+
+// --------------------
+// INIT
+// --------------------
+updateDisplay();
