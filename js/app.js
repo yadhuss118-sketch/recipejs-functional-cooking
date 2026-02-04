@@ -1,34 +1,100 @@
-// Recipe data
+// ===============================
+// Recipe Data
+// ===============================
+
 const recipes = [
-    {id:1, title:"Classic Spaghetti Carbonara", time:25, difficulty:"easy", description:"A creamy Italian pasta dish made with eggs, cheese, pancetta, and black pepper.", category:"pasta"},
-    {id:2, title:"Chicken Tikka Masala", time:45, difficulty:"medium", description:"Tender chicken pieces in a creamy, spiced tomato sauce.", category:"curry"},
-    {id:3, title:"Homemade Croissants", time:180, difficulty:"hard", description:"Buttery, flaky French pastries that require patience but deliver amazing results.", category:"baking"},
-    {id:4, title:"Greek Salad", time:15, difficulty:"easy", description:"Fresh vegetables, feta cheese, and olives tossed in olive oil and herbs.", category:"salad"},
-    {id:5, title:"Beef Wellington", time:120, difficulty:"hard", description:"Tender beef fillet coated with mushroom duxelles and wrapped in puff pastry.", category:"meat"},
-    {id:6, title:"Vegetable Stir Fry", time:20, difficulty:"easy", description:"Colorful mixed vegetables cooked quickly in a savory sauce.", category:"vegetarian"},
-    {id:7, title:"Pad Thai", time:30, difficulty:"medium", description:"Thai stir-fried rice noodles with shrimp, peanuts, and tangy tamarind sauce.", category:"noodles"},
-    {id:8, title:"Margherita Pizza", time:60, difficulty:"medium", description:"Classic Italian pizza with fresh mozzarella, tomatoes, and basil.", category:"pizza"}
+    {
+        title: "Spaghetti Carbonara",
+        difficulty: "Medium",
+        time: 30
+    },
+    {
+        title: "Grilled Cheese Sandwich",
+        difficulty: "Easy",
+        time: 10
+    },
+    {
+        title: "Chicken Biryani",
+        difficulty: "Hard",
+        time: 60
+    },
+    {
+        title: "Pancakes",
+        difficulty: "Easy",
+        time: 20
+    },
+    {
+        title: "Veg Stir Fry",
+        difficulty: "Medium",
+        time: 25
+    }
 ];
 
-// DOM Selection
-const recipeContainer = document.querySelector('#recipe-container');
+// ===============================
+// Render Recipes
+// ===============================
 
-// Function to create HTML for a single recipe card
-const createRecipeCard = (recipe) => `
-    <div class="recipe-card" data-id="${recipe.id}">
-        <h3>${recipe.title}</h3>
-        <div class="recipe-meta">
-            <span>⏱️ ${recipe.time} min</span>
-            <span class="difficulty ${recipe.difficulty}">${recipe.difficulty}</span>
-        </div>
-        <p>${recipe.description}</p>
-    </div>
-`;
+const recipeContainer = document.getElementById("recipe-container");
 
-// Function to render all recipes
-const renderRecipes = (recipesToRender) => {
-    recipeContainer.innerHTML = recipesToRender.map(createRecipeCard).join('');
-};
+function renderRecipes(recipeList) {
+    recipeContainer.innerHTML = "";
 
-// Initialize App
+    recipeList.forEach(recipe => {
+        const card = document.createElement("div");
+        card.className = "recipe-card";
+
+        card.innerHTML = `
+            <h3>${recipe.title}</h3>
+            <p>Difficulty: <strong>${recipe.difficulty}</strong></p>
+            <p>Time: ${recipe.time} mins</p>
+        `;
+
+        recipeContainer.appendChild(card);
+    });
+}
+
+// Initial render
 renderRecipes(recipes);
+
+// ===============================
+// Filter & Sort Controls
+// ===============================
+
+const buttons = document.querySelectorAll(".controls button");
+
+buttons.forEach(button => {
+    button.addEventListener("click", () => {
+        const action = button.dataset.action;
+        handleAction(action);
+    });
+});
+
+function handleAction(action) {
+    let updatedRecipes = [...recipes];
+
+    if (action === "easy") {
+        updatedRecipes = recipes.filter(r => r.difficulty === "Easy");
+    }
+
+    if (action === "medium") {
+        updatedRecipes = recipes.filter(r => r.difficulty === "Medium");
+    }
+
+    if (action === "hard") {
+        updatedRecipes = recipes.filter(r => r.difficulty === "Hard");
+    }
+
+    if (action === "quick") {
+        updatedRecipes = recipes.filter(r => r.time <= 30);
+    }
+
+    if (action === "time") {
+        updatedRecipes.sort((a, b) => a.time - b.time);
+    }
+
+    if (action === "az") {
+        updatedRecipes.sort((a, b) => a.title.localeCompare(b.title));
+    }
+
+    renderRecipes(updatedRecipes);
+}
