@@ -1,34 +1,181 @@
-// Recipe data
+// --------------------
+// DATA
+// --------------------
 const recipes = [
-    {id:1, title:"Classic Spaghetti Carbonara", time:25, difficulty:"easy", description:"A creamy Italian pasta dish made with eggs, cheese, pancetta, and black pepper.", category:"pasta"},
-    {id:2, title:"Chicken Tikka Masala", time:45, difficulty:"medium", description:"Tender chicken pieces in a creamy, spiced tomato sauce.", category:"curry"},
-    {id:3, title:"Homemade Croissants", time:180, difficulty:"hard", description:"Buttery, flaky French pastries that require patience but deliver amazing results.", category:"baking"},
-    {id:4, title:"Greek Salad", time:15, difficulty:"easy", description:"Fresh vegetables, feta cheese, and olives tossed in olive oil and herbs.", category:"salad"},
-    {id:5, title:"Beef Wellington", time:120, difficulty:"hard", description:"Tender beef fillet coated with mushroom duxelles and wrapped in puff pastry.", category:"meat"},
-    {id:6, title:"Vegetable Stir Fry", time:20, difficulty:"easy", description:"Colorful mixed vegetables cooked quickly in a savory sauce.", category:"vegetarian"},
-    {id:7, title:"Pad Thai", time:30, difficulty:"medium", description:"Thai stir-fried rice noodles with shrimp, peanuts, and tangy tamarind sauce.", category:"noodles"},
-    {id:8, title:"Margherita Pizza", time:60, difficulty:"medium", description:"Classic Italian pizza with fresh mozzarella, tomatoes, and basil.", category:"pizza"}
+  {
+    title: "Pasta Alfredo",
+    difficulty: "easy",
+    time: 20,
+    ingredients: ["Pasta", "Cream", "Garlic", "Cheese"],
+    steps: ["Boil pasta", "Prepare sauce", "Mix together", "Serve"]
+  },
+  {
+    title: "Chicken Curry",
+    difficulty: "medium",
+    time: 45,
+    ingredients: ["Chicken", "Onion", "Tomato", "Spices"],
+    steps: ["Marinate chicken", "Cook masala", "Add chicken", "Simmer"]
+  },
+  {
+    title: "Veg Fried Rice",
+    difficulty: "easy",
+    time: 25,
+    ingredients: ["Rice", "Vegetables", "Soy sauce"],
+    steps: ["Cook rice", "Stir fry veggies", "Add rice", "Mix"]
+  },
+  {
+    title: "Beef Steak",
+    difficulty: "hard",
+    time: 60,
+    ingredients: ["Beef", "Salt", "Pepper"],
+    steps: ["Season beef", "Heat pan", "Cook steak", "Rest & serve"]
+  }
 ];
 
-// DOM Selection
-const recipeContainer = document.querySelector('#recipe-container');
+// --------------------
+// STATE
+// --------------------
+let currentFilter = "all";
+let currentSort = "none";
+let searchTerm = "";
+let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 
-// Function to create HTML for a single recipe card
-const createRecipeCard = (recipe) => `
-    <div class="recipe-card" data-id="${recipe.id}">
-        <h3>${recipe.title}</h3>
-        <div class="recipe-meta">
-            <span>⏱️ ${recipe.time} min</span>
-            <span class="difficulty ${recipe.difficulty}">${recipe.difficulty}</span>
-        </div>
-        <p>${recipe.description}</p>
-    </div>
-`;
+// --------------------
+// DOM
+// --------------------
+const recipeContainer = document.getElementById("recipe-container");
+const filterButtons = document.querySelectorAll("[data-filter]");
+const sortButtons = document.querySelectorAll("[data-sort]");
+const searchInput = document.getElementById("searchInput");
 
-// Function to render all recipes
-const renderRecipes = (recipesToRender) => {
-    recipeContainer.innerHTML = recipesToRender.map(createRecipeCard).join('');
+// --------------------
+// HELPERS
+// --------------------
+const isFavorite = (title) => favorites.includes(title);
+
+const toggleFavorite = (title) => {
+  favorites = isFavorite(title)
+    ? favorites.filter(f => f !== title)
+    : [...favorites, title];
+
+  localStorage.setItem("favorites", JSON.stringify(favorites));
 };
 
-// Initialize App
-renderRecipes(recipes);
+// --------------------
+// FILTER / SEARCH / SORT
+// --------------------
+const applyFilter = (list) => {
+  if (currentFilter === "all") return list;
+  if (currentFilter === "quick") {
+    return list.filter(r => r.time <= 30);
+  }
+  return list.filter(r => r.difficulty === currentFilter);
+};
+
+const applySearch = (list) => {
+  if (!searchTerm) return list;
+  return list.filter(r =>
+    r.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+};
+
+const applySort = (list) => {
+  if (currentSort === "name") {
+    return [...list].sort((a, b) => a.title.localeCompare(b.title));
+  }
+  if (currentSort === "time") {
+    return [...list].sort((a, b) => a.time - b.time);
+  }
+  return list;
+};
+
+// --------------------
+// RENDER
+// --------------------
+const renderRecipes = (list) => {
+  recipeContainer.innerHTML = list.map((r, i) => `
+    <div class="recipe-card">
+      <h3>${r.title}</h3>
+
+      <div class="recipe-meta">
+        <p>Difficulty: ${r.difficulty}</p>
+        <p>Time: ${r.time} mins</p>
+      </div>
+
+      <button class="btn toggle-btn" data-index="${i}">
+        Show Details
+      </button>
+
+      <button class="btn fav-btn" data-title="${r.title}">
+        ${isFavorite(r.title) ? "❤️ Favorite" : "🤍 Favorite"}
+      </button>
+
+      <div class="details hidden" id="details-${i}">
+        <h4>Ingredients</h4>
+        <ul>${r.ingredients.map(i => `<li>${i}</li>`).join("")}</ul>
+
+        <h4>Steps</h4>
+        <ol>${r.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+      </div>
+    </div>
+  `).join("");
+};
+
+// --------------------
+// UPDATE
+// --------------------
+const updateDisplay = () => {
+  let result = recipes;
+  result = applyFilter(result);
+  result = applySearch(result);
+  result = applySort(result);
+  renderRecipes(result);
+};
+
+// --------------------
+// EVENTS
+// --------------------
+filterButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    currentFilter = btn.dataset.filter;
+    filterButtons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    updateDisplay();
+  });
+});
+
+sortButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    currentSort = btn.dataset.sort;
+    sortButtons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    updateDisplay();
+  });
+});
+
+searchInput.addEventListener("input", (e) => {
+  searchTerm = e.target.value;
+  updateDisplay();
+});
+
+recipeContainer.addEventListener("click", (e) => {
+
+  if (e.target.classList.contains("toggle-btn")) {
+    const idx = e.target.dataset.index;
+    const details = document.getElementById(`details-${idx}`);
+    details.classList.toggle("hidden");
+    e.target.textContent = details.classList.contains("hidden")
+      ? "Show Details"
+      : "Hide Details";
+  }
+
+  if (e.target.classList.contains("fav-btn")) {
+    toggleFavorite(e.target.dataset.title);
+    updateDisplay();
+  }
+});
+
+// --------------------
+// INIT
+// --------------------
+updateDisplay();

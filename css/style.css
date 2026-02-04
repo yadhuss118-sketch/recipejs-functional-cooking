@@ -1,105 +1,84 @@
-/* Reset and Base Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
-    line-height: 1.6;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  margin: 0;
 }
 
-/* Header */
 header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    text-align: center;
-    padding: 2rem 1rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  background: #ff7043;
+  color: white;
+  text-align: center;
+  padding: 20px;
 }
 
-header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
+.controls {
+  background: white;
+  padding: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: space-between;
 }
 
-header p {
-    font-size: 1.1rem;
-    opacity: 0.9;
+.search {
+  padding: 8px;
+  width: 220px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 
-/* Main Container */
-main {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+.filters, .sorts {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-/* Recipe Container - Flexbox Grid */
+.btn {
+  padding: 8px 14px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  background: #e0e0e0;
+}
+
+.btn.active {
+  background: #ff7043;
+  color: white;
+}
+
 #recipe-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 15px;
+  padding: 20px;
 }
 
-/* Recipe Card */
 .recipe-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    padding: 1.5rem;
-    width: 300px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.recipe-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
-}
-
-/* Recipe Card Content */
-.recipe-card h3 {
-    color: #667eea;
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
 }
 
 .recipe-meta {
-    display: flex;
-    gap: 1rem;
-    margin: 0.75rem 0;
-    font-size: 0.9rem;
-    color: #666;
+  font-size: 14px;
+  color: #555;
 }
 
-.recipe-card p {
-    color: #555;
-    line-height: 1.5;
+.toggle-btn {
+  background: #2196f3;
+  color: white;
+  margin-top: 10px;
 }
 
-/* Difficulty Badge */
-.difficulty {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: bold;
+.fav-btn {
+  margin-top: 10px;
+  background: #ffc107;
 }
 
-.difficulty.easy {
-    background-color: #d4edda;
-    color: #155724;
+.details {
+  margin-top: 10px;
 }
 
-.difficulty.medium {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-.difficulty.hard {
-    background-color: #f8d7da;
-    color: #721c24;
+.hidden {
+  display: none;
 }
